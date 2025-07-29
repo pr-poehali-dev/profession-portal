@@ -7,20 +7,15 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import Icon from '@/components/ui/icon';
 
 const Index = () => {
   const [selectedEvent, setSelectedEvent] = useState(null);
-  const [applicationForm, setApplicationForm] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    organization: '',
-    role: 'visitor',
-    message: ''
-  });
-
-  const newsItems = [
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [loginForm, setLoginForm] = useState({ username: '', password: '' });
+  const [showLogin, setShowLogin] = useState(false);
+  const [newsItems, setNewsItems] = useState([
     {
       id: 1,
       title: 'Фестиваль профессий-2024: новые возможности для молодежи',
@@ -37,9 +32,8 @@ const Index = () => {
       content: 'Состоялась встреча представителей ведущих предприятий края с выпускниками учебных заведений. Обсуждались вакансии и перспективы развития карьеры в различных отраслях экономики.',
       tags: ['Работодатели', 'Карьера', 'Трудоустройство']
     }
-  ];
-
-  const events = [
+  ]);
+  const [events, setEvents] = useState([
     {
       id: 1,
       title: 'Ярмарка вакансий "Мой выбор"',
@@ -60,7 +54,32 @@ const Index = () => {
       participants: 120,
       type: 'Квест'
     }
-  ];
+  ]);
+  const [applicationForm, setApplicationForm] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    organization: '',
+    role: 'visitor',
+    message: ''
+  });
+  const [newsForm, setNewsForm] = useState({
+    title: '',
+    content: '',
+    tags: '',
+    image: ''
+  });
+  const [eventForm, setEventForm] = useState({
+    title: '',
+    date: '',
+    time: '',
+    location: '',
+    description: '',
+    type: '',
+    participants: 0
+  });
+
+
 
   const contacts = [
     {
@@ -91,6 +110,67 @@ const Index = () => {
     });
   };
 
+  const handleLogin = (e) => {
+    e.preventDefault();
+    if (loginForm.username === 'admin' && loginForm.password === 'kkc2024') {
+      setIsAdmin(true);
+      setShowLogin(false);
+      alert('Вход в административную панель выполнен успешно!');
+    } else {
+      alert('Неверные данные для входа!');
+    }
+  };
+
+  const handleLogout = () => {
+    setIsAdmin(false);
+    setLoginForm({ username: '', password: '' });
+  };
+
+  const handleAddNews = (e) => {
+    e.preventDefault();
+    const newNews = {
+      id: Date.now(),
+      title: newsForm.title,
+      content: newsForm.content,
+      date: new Date().toLocaleDateString('ru-RU'),
+      image: newsForm.image || '/img/556c47cc-2f14-4a26-a053-c0bfa23038d4.jpg',
+      tags: newsForm.tags.split(',').map(tag => tag.trim()).filter(tag => tag)
+    };
+    setNewsItems([newNews, ...newsItems]);
+    setNewsForm({ title: '', content: '', tags: '', image: '' });
+    alert('Новость успешно добавлена!');
+  };
+
+  const handleDeleteNews = (id) => {
+    if (confirm('Удалить эту новость?')) {
+      setNewsItems(newsItems.filter(news => news.id !== id));
+    }
+  };
+
+  const handleAddEvent = (e) => {
+    e.preventDefault();
+    const newEvent = {
+      id: Date.now(),
+      title: eventForm.title,
+      date: eventForm.date,
+      time: eventForm.time,
+      location: eventForm.location,
+      description: eventForm.description,
+      type: eventForm.type,
+      participants: parseInt(eventForm.participants) || 0
+    };
+    setEvents([...events, newEvent]);
+    setEventForm({ title: '', date: '', time: '', location: '', description: '', type: '', participants: 0 });
+    alert('Мероприятие успешно добавлено!');
+  };
+
+  const handleDeleteEvent = (id) => {
+    if (confirm('Удалить это мероприятие?')) {
+      setEvents(events.filter(event => event.id !== id));
+    }
+  };
+  };
+
   return (
     <div className="min-h-screen bg-government-gray">
       {/* Header */}
@@ -106,9 +186,22 @@ const Index = () => {
                 <p className="text-sm opacity-90">Ставропольский край</p>
               </div>
             </div>
-            <div className="hidden md:flex items-center space-x-2">
-              <Icon name="MapPin" size={20} />
-              <span className="text-sm">Краевой кадровый центр</span>
+            <div className="hidden md:flex items-center space-x-4">
+              <div className="flex items-center space-x-2">
+                <Icon name="MapPin" size={20} />
+                <span className="text-sm">Краевой кадровый центр</span>
+              </div>
+              {isAdmin ? (
+                <Button variant="outline" size="sm" onClick={handleLogout} className="text-white border-white hover:bg-white hover:text-primary">
+                  <Icon name="LogOut" size={16} className="mr-1" />
+                  Выйти
+                </Button>
+              ) : (
+                <Button variant="outline" size="sm" onClick={() => setShowLogin(true)} className="text-white border-white hover:bg-white hover:text-primary">
+                  <Icon name="Lock" size={16} className="mr-1" />
+                  Админ
+                </Button>
+              )}
             </div>
           </div>
         </div>
@@ -117,7 +210,7 @@ const Index = () => {
       {/* Main Content */}
       <div className="container mx-auto px-4 py-8">
         <Tabs defaultValue="news" className="space-y-8">
-          <TabsList className="grid w-full grid-cols-3 lg:w-1/2 mx-auto">
+          <TabsList className={`grid w-full ${isAdmin ? 'grid-cols-4' : 'grid-cols-3'} lg:w-2/3 mx-auto`}>
             <TabsTrigger value="news" className="flex items-center space-x-2">
               <Icon name="Newspaper" size={16} />
               <span>Новости</span>
@@ -130,6 +223,12 @@ const Index = () => {
               <Icon name="Phone" size={16} />
               <span>Контакты</span>
             </TabsTrigger>
+            {isAdmin && (
+              <TabsTrigger value="admin" className="flex items-center space-x-2">
+                <Icon name="Settings" size={16} />
+                <span>Админка</span>
+              </TabsTrigger>
+            )}
           </TabsList>
 
           {/* News Tab */}
@@ -145,17 +244,27 @@ const Index = () => {
             
             <div className="grid gap-6 md:grid-cols-2">
               {newsItems.map((item) => (
-                <Card key={item.id} className="overflow-hidden hover:shadow-xl transition-shadow duration-300">
+                <Card key={item.id} className="overflow-hidden hover:shadow-xl transition-shadow duration-300 relative">
                   <div className="relative h-48 overflow-hidden">
                     <img 
                       src={item.image} 
                       alt={item.title}
                       className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
                     />
-                    <div className="absolute top-4 right-4">
+                    <div className="absolute top-4 right-4 flex gap-2">
                       <Badge variant="secondary" className="bg-government-orange text-white">
                         {item.date}
                       </Badge>
+                      {isAdmin && (
+                        <Button 
+                          size="sm" 
+                          variant="destructive" 
+                          onClick={() => handleDeleteNews(item.id)}
+                          className="h-6 w-6 p-0"
+                        >
+                          <Icon name="X" size={12} />
+                        </Button>
+                      )}
                     </div>
                   </div>
                   <CardContent className="p-6">
@@ -191,8 +300,18 @@ const Index = () => {
 
             <div className="grid gap-6">
               {events.map((event) => (
-                <Card key={event.id} className="overflow-hidden">
+                <Card key={event.id} className="overflow-hidden relative">
                   <CardContent className="p-6">
+                    {isAdmin && (
+                      <Button 
+                        size="sm" 
+                        variant="destructive" 
+                        onClick={() => handleDeleteEvent(event.id)}
+                        className="absolute top-4 right-4 h-8 w-8 p-0"
+                      >
+                        <Icon name="X" size={14} />
+                      </Button>
+                    )}
                     <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
                       <div className="flex-1">
                         <div className="flex items-center space-x-3 mb-2">
@@ -366,7 +485,241 @@ const Index = () => {
               </CardContent>
             </Card>
           </TabsContent>
+
+          {/* Admin Panel Tab */}
+          {isAdmin && (
+            <TabsContent value="admin" className="space-y-6">
+              <div className="text-center mb-8">
+                <h2 className="text-3xl font-bold text-primary mb-4" style={{ fontFamily: 'PT Sans, sans-serif' }}>
+                  Административная панель
+                </h2>
+                <p className="text-gray-600 max-w-2xl mx-auto" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                  Управление новостями и мероприятиями
+                </p>
+              </div>
+
+              <div className="grid gap-8 lg:grid-cols-2">
+                {/* Add News Form */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center space-x-2">
+                      <Icon name="Plus" size={20} />
+                      <span>Добавить новость</span>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <form onSubmit={handleAddNews} className="space-y-4">
+                      <div>
+                        <Label htmlFor="newsTitle">Заголовок *</Label>
+                        <Input
+                          id="newsTitle"
+                          required
+                          value={newsForm.title}
+                          onChange={(e) => setNewsForm({...newsForm, title: e.target.value})}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="newsContent">Содержание *</Label>
+                        <Textarea
+                          id="newsContent"
+                          required
+                          rows={4}
+                          value={newsForm.content}
+                          onChange={(e) => setNewsForm({...newsForm, content: e.target.value})}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="newsTags">Теги (через запятую)</Label>
+                        <Input
+                          id="newsTags"
+                          placeholder="Фестиваль, Молодежь, Профориентация"
+                          value={newsForm.tags}
+                          onChange={(e) => setNewsForm({...newsForm, tags: e.target.value})}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="newsImage">URL изображения</Label>
+                        <Input
+                          id="newsImage"
+                          placeholder="/img/example.jpg"
+                          value={newsForm.image}
+                          onChange={(e) => setNewsForm({...newsForm, image: e.target.value})}
+                        />
+                      </div>
+                      <Button type="submit" className="w-full">
+                        <Icon name="Plus" size={16} className="mr-2" />
+                        Добавить новость
+                      </Button>
+                    </form>
+                  </CardContent>
+                </Card>
+
+                {/* Add Event Form */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center space-x-2">
+                      <Icon name="Calendar" size={20} />
+                      <span>Добавить мероприятие</span>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <form onSubmit={handleAddEvent} className="space-y-4">
+                      <div>
+                        <Label htmlFor="eventTitle">Название *</Label>
+                        <Input
+                          id="eventTitle"
+                          required
+                          value={eventForm.title}
+                          onChange={(e) => setEventForm({...eventForm, title: e.target.value})}
+                        />
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="eventDate">Дата *</Label>
+                          <Input
+                            id="eventDate"
+                            required
+                            placeholder="15 августа 2024"
+                            value={eventForm.date}
+                            onChange={(e) => setEventForm({...eventForm, date: e.target.value})}
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="eventTime">Время *</Label>
+                          <Input
+                            id="eventTime"
+                            required
+                            placeholder="10:00 - 16:00"
+                            value={eventForm.time}
+                            onChange={(e) => setEventForm({...eventForm, time: e.target.value})}
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <Label htmlFor="eventLocation">Место проведения *</Label>
+                        <Input
+                          id="eventLocation"
+                          required
+                          value={eventForm.location}
+                          onChange={(e) => setEventForm({...eventForm, location: e.target.value})}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="eventDescription">Описание *</Label>
+                        <Textarea
+                          id="eventDescription"
+                          required
+                          rows={3}
+                          value={eventForm.description}
+                          onChange={(e) => setEventForm({...eventForm, description: e.target.value})}
+                        />
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="eventType">Тип мероприятия *</Label>
+                          <Input
+                            id="eventType"
+                            required
+                            placeholder="Ярмарка вакансий"
+                            value={eventForm.type}
+                            onChange={(e) => setEventForm({...eventForm, type: e.target.value})}
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="eventParticipants">Участников</Label>
+                          <Input
+                            id="eventParticipants"
+                            type="number"
+                            value={eventForm.participants}
+                            onChange={(e) => setEventForm({...eventForm, participants: e.target.value})}
+                          />
+                        </div>
+                      </div>
+                      <Button type="submit" className="w-full">
+                        <Icon name="Calendar" size={16} className="mr-2" />
+                        Добавить мероприятие
+                      </Button>
+                    </form>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Statistics */}
+              <Card className="mt-8">
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-2">
+                    <Icon name="BarChart3" size={20} />
+                    <span>Статистика</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className="text-center p-4 bg-government-gray rounded-lg">
+                      <div className="text-2xl font-bold text-primary">{newsItems.length}</div>
+                      <div className="text-sm text-gray-600">Новостей</div>
+                    </div>
+                    <div className="text-center p-4 bg-government-gray rounded-lg">
+                      <div className="text-2xl font-bold text-primary">{events.length}</div>
+                      <div className="text-sm text-gray-600">Мероприятий</div>
+                    </div>
+                    <div className="text-center p-4 bg-government-gray rounded-lg">
+                      <div className="text-2xl font-bold text-secondary">{events.reduce((sum, event) => sum + event.participants, 0)}</div>
+                      <div className="text-sm text-gray-600">Участников</div>
+                    </div>
+                    <div className="text-center p-4 bg-government-gray rounded-lg">
+                      <div className="text-2xl font-bold text-secondary">24</div>
+                      <div className="text-sm text-gray-600">Заявок</div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          )}
         </Tabs>
+
+        {/* Login Modal */}
+        {showLogin && (
+          <Dialog open={showLogin} onOpenChange={setShowLogin}>
+            <DialogContent className="max-w-md">
+              <DialogHeader>
+                <DialogTitle style={{ fontFamily: 'PT Sans, sans-serif' }}>
+                  Вход в административную панель
+                </DialogTitle>
+              </DialogHeader>
+              <form onSubmit={handleLogin} className="space-y-4">
+                <div>
+                  <Label htmlFor="adminUsername">Логин</Label>
+                  <Input
+                    id="adminUsername"
+                    required
+                    value={loginForm.username}
+                    onChange={(e) => setLoginForm({...loginForm, username: e.target.value})}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="adminPassword">Пароль</Label>
+                  <Input
+                    id="adminPassword"
+                    type="password"
+                    required
+                    value={loginForm.password}
+                    onChange={(e) => setLoginForm({...loginForm, password: e.target.value})}
+                  />
+                </div>
+                <Alert>
+                  <Icon name="Info" size={16} />
+                  <AlertDescription>
+                    Демо-доступ: admin / kkc2024
+                  </AlertDescription>
+                </Alert>
+                <Button type="submit" className="w-full">
+                  <Icon name="Lock" size={16} className="mr-2" />
+                  Войти
+                </Button>
+              </form>
+            </DialogContent>
+          </Dialog>
+        )}
       </div>
 
       {/* Footer */}
