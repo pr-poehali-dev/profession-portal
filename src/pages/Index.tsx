@@ -78,6 +78,26 @@ const Index = () => {
     type: '',
     participants: 0
   });
+  const [individualForm, setIndividualForm] = useState({ 
+    fullName: '', 
+    email: '', 
+    phone: '', 
+    organization: '', 
+    participationType: '', 
+    additionalInfo: '' 
+  });
+  const [groupForm, setGroupForm] = useState({ 
+    leaderName: '', 
+    organizationName: '', 
+    leaderEmail: '', 
+    leaderPhone: '', 
+    participantCount: 0, 
+    participantCategory: '', 
+    additionalInfo: '' 
+  });
+  const [likes, setLikes] = useState({});
+  const [comments, setComments] = useState({});
+  const [newComment, setNewComment] = useState('');
 
 
 
@@ -93,6 +113,12 @@ const Index = () => {
       phone: '+7 (8652) 789-012',
       email: 'employers@stavkadry.ru',
       responsible: 'Петров Сергей Александрович'
+    },
+    {
+      department: 'Служба занятости населения',
+      phone: '+7 (8652) 456-789',
+      email: 'employment@stavkrai.ru',
+      responsible: 'Сидорова Мария Викторовна'
     }
   ];
 
@@ -170,6 +196,35 @@ const Index = () => {
     }
   };
 
+  const handleSubmitIndividualApplication = (e) => {
+    e.preventDefault();
+    alert('Индивидуальная заявка успешно отправлена! Мы свяжемся с вами в ближайшее время.');
+    setIndividualForm({ fullName: '', email: '', phone: '', organization: '', participationType: '', additionalInfo: '' });
+  };
+
+  const handleSubmitGroupApplication = (e) => {
+    e.preventDefault();
+    alert('Групповая заявка успешно отправлена! Мы свяжемся с вами в ближайшее время.');
+    setGroupForm({ leaderName: '', organizationName: '', leaderEmail: '', leaderPhone: '', participantCount: 0, participantCategory: '', additionalInfo: '' });
+  };
+
+  const handleLike = (type, id) => {
+    setLikes(prev => ({
+      ...prev,
+      [`${type}_${id}`]: !prev[`${type}_${id}`]
+    }));
+  };
+
+  const handleAddComment = (type, id) => {
+    if (newComment.trim()) {
+      setComments(prev => ({
+        ...prev,
+        [`${type}_${id}`]: [...(prev[`${type}_${id}`] || []), newComment.trim()]
+      }));
+      setNewComment('');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-government-gray">
       {/* Header */}
@@ -199,7 +254,7 @@ const Index = () => {
                 <Icon name="Building2" size={32} />
                 <div>
                   <h1 className="text-2xl font-bold" style={{ fontFamily: 'PT Sans, sans-serif' }}>
-                    Профориентационная витрина
+                    Единая профориентационная витрина
                   </h1>
                   <p className="text-sm opacity-90">Ставропольский край</p>
                 </div>
@@ -229,17 +284,21 @@ const Index = () => {
       {/* Main Content */}
       <div className="container mx-auto px-4 py-8">
         <Tabs defaultValue="news" className="space-y-8">
-          <TabsList className={`grid w-full ${isAdmin ? 'grid-cols-4' : 'grid-cols-3'} lg:w-2/3 mx-auto`}>
-            <TabsTrigger value="news" className="flex items-center space-x-2">
-              <Icon name="Newspaper" size={16} />
+          <TabsList className={`grid w-full ${isAdmin ? 'grid-cols-6' : 'grid-cols-5'} lg:w-full mx-auto text-xs`}>
+            <TabsTrigger value="news" className="flex items-center space-x-1">
+              <Icon name="Newspaper" size={14} />
               <span>Новости</span>
             </TabsTrigger>
-            <TabsTrigger value="events" className="flex items-center space-x-2">
-              <Icon name="Calendar" size={16} />
+            <TabsTrigger value="events" className="flex items-center space-x-1">
+              <Icon name="Calendar" size={14} />
               <span>Фестиваль профессий</span>
             </TabsTrigger>
-            <TabsTrigger value="contacts" className="flex items-center space-x-2">
-              <Icon name="Phone" size={16} />
+            <TabsTrigger value="applications" className="flex items-center space-x-1">
+              <Icon name="FileText" size={14} />
+              <span>Подать заявку</span>
+            </TabsTrigger>
+            <TabsTrigger value="contacts" className="flex items-center space-x-1">
+              <Icon name="Phone" size={14} />
               <span>Контакты</span>
             </TabsTrigger>
             {isAdmin && (
@@ -293,12 +352,58 @@ const Index = () => {
                     <p className="text-gray-600 mb-4" style={{ fontFamily: 'Open Sans, sans-serif' }}>
                       {item.content}
                     </p>
-                    <div className="flex flex-wrap gap-2">
+                    <div className="flex flex-wrap gap-2 mb-4">
                       {item.tags.map((tag, index) => (
                         <Badge key={index} variant="outline" className="text-xs">
                           {tag}
                         </Badge>
                       ))}
+                    </div>
+                    
+                    {/* Interaction Elements */}
+                    <div className="border-t pt-4 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleLike('news', item.id)}
+                          className={`text-sm ${likes[`news_${item.id}`] ? 'text-red-500' : 'text-gray-500'}`}
+                        >
+                          <Icon name={likes[`news_${item.id}`] ? "Heart" : "Heart"} size={16} className="mr-1" />
+                          {likes[`news_${item.id}`] ? 'Интересно' : 'Интересно'}
+                        </Button>
+                        <span className="text-xs text-gray-500">
+                          {comments[`news_${item.id}`]?.length || 0} комментариев
+                        </span>
+                      </div>
+                      
+                      {/* Comments */}
+                      {comments[`news_${item.id}`] && comments[`news_${item.id}`].length > 0 && (
+                        <div className="space-y-2">
+                          {comments[`news_${item.id}`].slice(-2).map((comment, idx) => (
+                            <div key={idx} className="text-sm text-gray-600 bg-gray-50 p-2 rounded">
+                              {comment}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      
+                      {/* Add Comment */}
+                      <div className="flex gap-2">
+                        <Input
+                          placeholder="Добавить комментарий..."
+                          value={newComment}
+                          onChange={(e) => setNewComment(e.target.value)}
+                          className="text-sm"
+                        />
+                        <Button
+                          size="sm"
+                          onClick={() => handleAddComment('news', item.id)}
+                          disabled={!newComment.trim()}
+                        >
+                          <Icon name="Send" size={14} />
+                        </Button>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
@@ -488,19 +593,279 @@ const Index = () => {
               ))}
             </div>
 
+            <div className="grid gap-6 lg:grid-cols-2 mt-8">
+              <Card>
+                <CardContent className="p-6">
+                  <div className="text-center">
+                    <h3 className="text-xl font-bold text-primary mb-4" style={{ fontFamily: 'PT Sans, sans-serif' }}>
+                      Краевое государственное казенное учреждение<br />
+                      "Краевой кадровый центр"
+                    </h3>
+                    <div className="space-y-2 text-gray-600" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                      <p>📍 г. Ставрополь, ул. Ленина, 123</p>
+                      <p>🕒 Режим работы: Пн-Пт 9:00-18:00</p>
+                      <p>📧 info@stavkadry.ru</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-primary flex items-center space-x-2" style={{ fontFamily: 'PT Sans, sans-serif' }}>
+                    <Icon name="ExternalLink" size={20} />
+                    <span>Полезные ссылки</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div>
+                    <h4 className="font-semibold mb-2 text-primary">Портал "Работа России"</h4>
+                    <a 
+                      href="https://trudvsem.ru/" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="flex items-center space-x-2 text-secondary hover:underline"
+                    >
+                      <Icon name="Globe" size={16} />
+                      <span>trudvsem.ru</span>
+                    </a>
+                    <p className="text-sm text-gray-600 mt-1">
+                      Общероссийская база вакансий и услуг в сфере занятости
+                    </p>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold mb-2 text-primary">Центр занятости населения</h4>
+                    <a 
+                      href="https://stavzan.ru/" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="flex items-center space-x-2 text-secondary hover:underline"
+                    >
+                      <Icon name="Globe" size={16} />
+                      <span>stavzan.ru</span>
+                    </a>
+                    <p className="text-sm text-gray-600 mt-1">
+                      Официальный сайт службы занятости Ставропольского края
+                    </p>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold mb-2 text-primary">Госуслуги</h4>
+                    <a 
+                      href="https://gosuslugi.ru/" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="flex items-center space-x-2 text-secondary hover:underline"
+                    >
+                      <Icon name="Globe" size={16} />
+                      <span>gosuslugi.ru</span>
+                    </a>
+                    <p className="text-sm text-gray-600 mt-1">
+                      Единый портал государственных услуг
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          {/* Applications Tab */}
+          <TabsContent value="applications" className="space-y-6">
+            <div className="text-center mb-8">
+              <h2 className="text-3xl font-bold text-primary mb-4" style={{ fontFamily: 'PT Sans, sans-serif' }}>
+                Подача заявок на участие
+              </h2>
+              <p className="text-gray-600 max-w-2xl mx-auto" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                Выберите тип заявки и заполните форму для участия в профориентационных мероприятиях
+              </p>
+            </div>
+
+            <div className="grid gap-8 lg:grid-cols-2">
+              {/* Individual Application */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-2">
+                    <Icon name="User" size={20} />
+                    <span>Индивидуальная заявка</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <form onSubmit={handleSubmitIndividualApplication} className="space-y-4">
+                    <div>
+                      <Label htmlFor="individualFullName">ФИО *</Label>
+                      <Input
+                        id="individualFullName"
+                        required
+                        value={individualForm.fullName}
+                        onChange={(e) => setIndividualForm({...individualForm, fullName: e.target.value})}
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="individualEmail">Email *</Label>
+                        <Input
+                          id="individualEmail"
+                          type="email"
+                          required
+                          value={individualForm.email}
+                          onChange={(e) => setIndividualForm({...individualForm, email: e.target.value})}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="individualPhone">Телефон *</Label>
+                        <Input
+                          id="individualPhone"
+                          required
+                          value={individualForm.phone}
+                          onChange={(e) => setIndividualForm({...individualForm, phone: e.target.value})}
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <Label htmlFor="individualOrganization">Организация</Label>
+                      <Input
+                        id="individualOrganization"
+                        value={individualForm.organization}
+                        onChange={(e) => setIndividualForm({...individualForm, organization: e.target.value})}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="individualParticipationType">Тип участия *</Label>
+                      <select 
+                        id="individualParticipationType"
+                        required
+                        value={individualForm.participationType}
+                        onChange={(e) => setIndividualForm({...individualForm, participationType: e.target.value})}
+                        className="w-full p-2 border border-gray-300 rounded-md"
+                      >
+                        <option value="">Выберите тип участия</option>
+                        <option value="visitor">Посетитель</option>
+                        <option value="employer">Работодатель</option>
+                        <option value="partner">Партнер мероприятия</option>
+                        <option value="student">Студент/Школьник</option>
+                      </select>
+                    </div>
+                    <div>
+                      <Label htmlFor="individualAdditionalInfo">Дополнительная информация</Label>
+                      <Textarea
+                        id="individualAdditionalInfo"
+                        rows={3}
+                        value={individualForm.additionalInfo}
+                        onChange={(e) => setIndividualForm({...individualForm, additionalInfo: e.target.value})}
+                      />
+                    </div>
+                    <Button type="submit" className="w-full">
+                      <Icon name="Send" size={16} className="mr-2" />
+                      Отправить заявку
+                    </Button>
+                  </form>
+                </CardContent>
+              </Card>
+
+              {/* Group Application */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-2">
+                    <Icon name="Users" size={20} />
+                    <span>Групповая заявка</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <form onSubmit={handleSubmitGroupApplication} className="space-y-4">
+                    <div>
+                      <Label htmlFor="groupLeaderName">ФИО руководителя группы *</Label>
+                      <Input
+                        id="groupLeaderName"
+                        required
+                        value={groupForm.leaderName}
+                        onChange={(e) => setGroupForm({...groupForm, leaderName: e.target.value})}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="groupOrganizationName">Наименование организации *</Label>
+                      <Input
+                        id="groupOrganizationName"
+                        required
+                        value={groupForm.organizationName}
+                        onChange={(e) => setGroupForm({...groupForm, organizationName: e.target.value})}
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="groupLeaderEmail">Email руководителя *</Label>
+                        <Input
+                          id="groupLeaderEmail"
+                          type="email"
+                          required
+                          value={groupForm.leaderEmail}
+                          onChange={(e) => setGroupForm({...groupForm, leaderEmail: e.target.value})}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="groupLeaderPhone">Телефон руководителя *</Label>
+                        <Input
+                          id="groupLeaderPhone"
+                          required
+                          value={groupForm.leaderPhone}
+                          onChange={(e) => setGroupForm({...groupForm, leaderPhone: e.target.value})}
+                        />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="groupParticipantCount">Количество участников *</Label>
+                        <Input
+                          id="groupParticipantCount"
+                          type="number"
+                          required
+                          min="1"
+                          value={groupForm.participantCount}
+                          onChange={(e) => setGroupForm({...groupForm, participantCount: parseInt(e.target.value) || 0})}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="groupParticipantCategory">Категория участников *</Label>
+                        <select 
+                          id="groupParticipantCategory"
+                          required
+                          value={groupForm.participantCategory}
+                          onChange={(e) => setGroupForm({...groupForm, participantCategory: e.target.value})}
+                          className="w-full p-2 border border-gray-300 rounded-md"
+                        >
+                          <option value="">Выберите категорию</option>
+                          <option value="students">Студенты</option>
+                          <option value="schoolchildren">Школьники</option>
+                          <option value="job_seekers">Соискатели</option>
+                          <option value="employees">Сотрудники организации</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div>
+                      <Label htmlFor="groupAdditionalInfo">Дополнительная информация</Label>
+                      <Textarea
+                        id="groupAdditionalInfo"
+                        rows={3}
+                        value={groupForm.additionalInfo}
+                        onChange={(e) => setGroupForm({...groupForm, additionalInfo: e.target.value})}
+                      />
+                    </div>
+                    <Button type="submit" className="w-full">
+                      <Icon name="Send" size={16} className="mr-2" />
+                      Отправить групповую заявку
+                    </Button>
+                  </form>
+                </CardContent>
+              </Card>
+            </div>
+
             <Card className="mt-8">
               <CardContent className="p-6">
-                <div className="text-center">
-                  <h3 className="text-xl font-bold text-primary mb-4" style={{ fontFamily: 'PT Sans, sans-serif' }}>
-                    Краевое государственное казенное учреждение<br />
-                    "Краевой кадровый центр"
-                  </h3>
-                  <div className="space-y-2 text-gray-600" style={{ fontFamily: 'Open Sans, sans-serif' }}>
-                    <p>📍 г. Ставрополь, ул. Ленина, 123</p>
-                    <p>🕒 Режим работы: Пн-Пт 9:00-18:00</p>
-                    <p>📧 info@stavkadry.ru</p>
-                  </div>
-                </div>
+                <Alert>
+                  <Icon name="Info" size={16} />
+                  <AlertDescription>
+                    <strong>Обратите внимание:</strong> После отправки заявки с вами свяжется представитель Краевого кадрового центра 
+                    для подтверждения участия и предоставления дополнительной информации о мероприятии.
+                  </AlertDescription>
+                </Alert>
               </CardContent>
             </Card>
           </TabsContent>
