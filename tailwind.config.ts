@@ -39,6 +39,12 @@ export default {
 					white: '#FFFFFF',
 					gray: '#F5F5F5'
 				},
+				russia: {
+					blue: '#0052CC',
+					red: '#DC143C',
+					darkblue: '#002C5F',
+					lightgray: '#F8F9FA'
+				},
 				destructive: {
 					DEFAULT: 'hsl(var(--destructive))',
 					foreground: 'hsl(var(--destructive-foreground))'

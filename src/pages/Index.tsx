@@ -177,13 +177,33 @@ const Index = () => {
       <header className="bg-primary text-white py-6 shadow-lg">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <Icon name="Building2" size={32} />
-              <div>
-                <h1 className="text-2xl font-bold" style={{ fontFamily: 'PT Sans, sans-serif' }}>
-                  Профориентационная витрина
-                </h1>
-                <p className="text-sm opacity-90">Ставропольский край</p>
+            <div className="flex items-center space-x-6">
+              {/* Работа России брендинг */}
+              <div className="flex items-center space-x-3">
+                <img 
+                  src="/img/f92b67ea-3446-4ae3-98e7-66be92e18797.jpg" 
+                  alt="Работа России"
+                  className="h-12 w-auto object-contain bg-white rounded px-2 py-1"
+                />
+                <div className="border-l border-white border-opacity-30 pl-4">
+                  <div className="text-sm font-semibold mb-1" style={{ fontFamily: 'PT Sans, sans-serif' }}>
+                    Работа России
+                  </div>
+                  <div className="text-xs opacity-75" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+                    Федеральная служба занятости
+                  </div>
+                </div>
+              </div>
+              
+              {/* ККЦ брендинг */}
+              <div className="flex items-center space-x-4">
+                <Icon name="Building2" size={32} />
+                <div>
+                  <h1 className="text-2xl font-bold" style={{ fontFamily: 'PT Sans, sans-serif' }}>
+                    Профориентационная витрина
+                  </h1>
+                  <p className="text-sm opacity-90">Ставропольский край</p>
+                </div>
               </div>
             </div>
             <div className="hidden md:flex items-center space-x-4">
