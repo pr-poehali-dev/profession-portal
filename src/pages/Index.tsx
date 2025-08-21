@@ -169,7 +169,6 @@ const Index = () => {
       setEvents(events.filter(event => event.id !== id));
     }
   };
-  };
 
   return (
     <div className="min-h-screen bg-government-gray">
