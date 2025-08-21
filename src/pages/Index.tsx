@@ -98,6 +98,9 @@ const Index = () => {
   const [likes, setLikes] = useState({});
   const [comments, setComments] = useState({});
   const [newComment, setNewComment] = useState('');
+  const [showApplicationModal, setShowApplicationModal] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState(null);
+  const [applicationType, setApplicationType] = useState('');
 
 
 
@@ -198,14 +201,20 @@ const Index = () => {
 
   const handleSubmitIndividualApplication = (e) => {
     e.preventDefault();
-    alert('Индивидуальная заявка успешно отправлена! Мы свяжемся с вами в ближайшее время.');
+    alert(`Индивидуальная заявка на мероприятие "${selectedEvent?.title}" успешно отправлена! Мы свяжемся с вами в ближайшее время.`);
     setIndividualForm({ fullName: '', email: '', phone: '', organization: '', participationType: '', additionalInfo: '' });
+    setShowApplicationModal(false);
+    setApplicationType('');
+    setSelectedEvent(null);
   };
 
   const handleSubmitGroupApplication = (e) => {
     e.preventDefault();
-    alert('Групповая заявка успешно отправлена! Мы свяжемся с вами в ближайшее время.');
+    alert(`Групповая заявка на мероприятие "${selectedEvent?.title}" успешно отправлена! Мы свяжемся с вами в ближайшее время.`);
     setGroupForm({ leaderName: '', organizationName: '', leaderEmail: '', leaderPhone: '', participantCount: 0, participantCategory: '', additionalInfo: '' });
+    setShowApplicationModal(false);
+    setApplicationType('');
+    setSelectedEvent(null);
   };
 
   const handleLike = (type, id) => {
@@ -223,6 +232,16 @@ const Index = () => {
       }));
       setNewComment('');
     }
+  };
+
+  const handleApplyToEvent = (event) => {
+    setSelectedEvent(event);
+    setApplicationType('');
+    setShowApplicationModal(true);
+  };
+
+  const handleSelectApplicationType = (type) => {
+    setApplicationType(type);
   };
 
   return (
@@ -284,21 +303,17 @@ const Index = () => {
       {/* Main Content */}
       <div className="container mx-auto px-4 py-8">
         <Tabs defaultValue="news" className="space-y-8">
-          <TabsList className={`grid w-full ${isAdmin ? 'grid-cols-6' : 'grid-cols-5'} lg:w-full mx-auto text-xs`}>
-            <TabsTrigger value="news" className="flex items-center space-x-1">
-              <Icon name="Newspaper" size={14} />
+          <TabsList className={`grid w-full ${isAdmin ? 'grid-cols-4' : 'grid-cols-3'} lg:w-2/3 mx-auto`}>
+            <TabsTrigger value="news" className="flex items-center space-x-2">
+              <Icon name="Newspaper" size={16} />
               <span>Новости</span>
             </TabsTrigger>
-            <TabsTrigger value="events" className="flex items-center space-x-1">
-              <Icon name="Calendar" size={14} />
+            <TabsTrigger value="events" className="flex items-center space-x-2">
+              <Icon name="Calendar" size={16} />
               <span>Фестиваль профессий</span>
             </TabsTrigger>
-            <TabsTrigger value="applications" className="flex items-center space-x-1">
-              <Icon name="FileText" size={14} />
-              <span>Подать заявку</span>
-            </TabsTrigger>
-            <TabsTrigger value="contacts" className="flex items-center space-x-1">
-              <Icon name="Phone" size={14} />
+            <TabsTrigger value="contacts" className="flex items-center space-x-2">
+              <Icon name="Phone" size={16} />
               <span>Контакты</span>
             </TabsTrigger>
             {isAdmin && (
@@ -466,83 +481,13 @@ const Index = () => {
                         </div>
                       </div>
                       <div className="lg:ml-6">
-                        <Dialog>
-                          <DialogTrigger asChild>
-                            <Button className="w-full lg:w-auto bg-government-orange hover:bg-government-orange/90">
-                              <Icon name="UserPlus" size={16} className="mr-2" />
-                              Подать заявку
-                            </Button>
-                          </DialogTrigger>
-                          <DialogContent className="max-w-md">
-                            <DialogHeader>
-                              <DialogTitle style={{ fontFamily: 'PT Sans, sans-serif' }}>
-                                Заявка на участие
-                              </DialogTitle>
-                            </DialogHeader>
-                            <form onSubmit={handleSubmitApplication} className="space-y-4">
-                              <div>
-                                <Label htmlFor="name">ФИО *</Label>
-                                <Input
-                                  id="name"
-                                  required
-                                  value={applicationForm.name}
-                                  onChange={(e) => setApplicationForm({...applicationForm, name: e.target.value})}
-                                />
-                              </div>
-                              <div>
-                                <Label htmlFor="email">Email *</Label>
-                                <Input
-                                  id="email"
-                                  type="email"
-                                  required
-                                  value={applicationForm.email}
-                                  onChange={(e) => setApplicationForm({...applicationForm, email: e.target.value})}
-                                />
-                              </div>
-                              <div>
-                                <Label htmlFor="phone">Телефон *</Label>
-                                <Input
-                                  id="phone"
-                                  required
-                                  value={applicationForm.phone}
-                                  onChange={(e) => setApplicationForm({...applicationForm, phone: e.target.value})}
-                                />
-                              </div>
-                              <div>
-                                <Label htmlFor="organization">Организация</Label>
-                                <Input
-                                  id="organization"
-                                  value={applicationForm.organization}
-                                  onChange={(e) => setApplicationForm({...applicationForm, organization: e.target.value})}
-                                />
-                              </div>
-                              <div>
-                                <Label htmlFor="role">Тип участия</Label>
-                                <select
-                                  id="role"
-                                  className="w-full p-2 border rounded-md"
-                                  value={applicationForm.role}
-                                  onChange={(e) => setApplicationForm({...applicationForm, role: e.target.value})}
-                                >
-                                  <option value="visitor">Посетитель</option>
-                                  <option value="employer">Работодатель</option>
-                                  <option value="partner">Партнер мероприятия</option>
-                                </select>
-                              </div>
-                              <div>
-                                <Label htmlFor="message">Дополнительная информация</Label>
-                                <Textarea
-                                  id="message"
-                                  value={applicationForm.message}
-                                  onChange={(e) => setApplicationForm({...applicationForm, message: e.target.value})}
-                                />
-                              </div>
-                              <Button type="submit" className="w-full bg-primary">
-                                Отправить заявку
-                              </Button>
-                            </form>
-                          </DialogContent>
-                        </Dialog>
+                        <Button 
+                          onClick={() => handleApplyToEvent(event)}
+                          className="w-full lg:w-auto bg-government-orange hover:bg-government-orange/90"
+                        >
+                          <Icon name="UserPlus" size={16} className="mr-2" />
+                          Подать заявку
+                        </Button>
                       </div>
                     </div>
                   </CardContent>
@@ -668,207 +613,6 @@ const Index = () => {
             </div>
           </TabsContent>
 
-          {/* Applications Tab */}
-          <TabsContent value="applications" className="space-y-6">
-            <div className="text-center mb-8">
-              <h2 className="text-3xl font-bold text-primary mb-4" style={{ fontFamily: 'PT Sans, sans-serif' }}>
-                Подача заявок на участие
-              </h2>
-              <p className="text-gray-600 max-w-2xl mx-auto" style={{ fontFamily: 'Open Sans, sans-serif' }}>
-                Выберите тип заявки и заполните форму для участия в профориентационных мероприятиях
-              </p>
-            </div>
-
-            <div className="grid gap-8 lg:grid-cols-2">
-              {/* Individual Application */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <Icon name="User" size={20} />
-                    <span>Индивидуальная заявка</span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <form onSubmit={handleSubmitIndividualApplication} className="space-y-4">
-                    <div>
-                      <Label htmlFor="individualFullName">ФИО *</Label>
-                      <Input
-                        id="individualFullName"
-                        required
-                        value={individualForm.fullName}
-                        onChange={(e) => setIndividualForm({...individualForm, fullName: e.target.value})}
-                      />
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="individualEmail">Email *</Label>
-                        <Input
-                          id="individualEmail"
-                          type="email"
-                          required
-                          value={individualForm.email}
-                          onChange={(e) => setIndividualForm({...individualForm, email: e.target.value})}
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="individualPhone">Телефон *</Label>
-                        <Input
-                          id="individualPhone"
-                          required
-                          value={individualForm.phone}
-                          onChange={(e) => setIndividualForm({...individualForm, phone: e.target.value})}
-                        />
-                      </div>
-                    </div>
-                    <div>
-                      <Label htmlFor="individualOrganization">Организация</Label>
-                      <Input
-                        id="individualOrganization"
-                        value={individualForm.organization}
-                        onChange={(e) => setIndividualForm({...individualForm, organization: e.target.value})}
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="individualParticipationType">Тип участия *</Label>
-                      <select 
-                        id="individualParticipationType"
-                        required
-                        value={individualForm.participationType}
-                        onChange={(e) => setIndividualForm({...individualForm, participationType: e.target.value})}
-                        className="w-full p-2 border border-gray-300 rounded-md"
-                      >
-                        <option value="">Выберите тип участия</option>
-                        <option value="visitor">Посетитель</option>
-                        <option value="employer">Работодатель</option>
-                        <option value="partner">Партнер мероприятия</option>
-                        <option value="student">Студент/Школьник</option>
-                      </select>
-                    </div>
-                    <div>
-                      <Label htmlFor="individualAdditionalInfo">Дополнительная информация</Label>
-                      <Textarea
-                        id="individualAdditionalInfo"
-                        rows={3}
-                        value={individualForm.additionalInfo}
-                        onChange={(e) => setIndividualForm({...individualForm, additionalInfo: e.target.value})}
-                      />
-                    </div>
-                    <Button type="submit" className="w-full">
-                      <Icon name="Send" size={16} className="mr-2" />
-                      Отправить заявку
-                    </Button>
-                  </form>
-                </CardContent>
-              </Card>
-
-              {/* Group Application */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <Icon name="Users" size={20} />
-                    <span>Групповая заявка</span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <form onSubmit={handleSubmitGroupApplication} className="space-y-4">
-                    <div>
-                      <Label htmlFor="groupLeaderName">ФИО руководителя группы *</Label>
-                      <Input
-                        id="groupLeaderName"
-                        required
-                        value={groupForm.leaderName}
-                        onChange={(e) => setGroupForm({...groupForm, leaderName: e.target.value})}
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="groupOrganizationName">Наименование организации *</Label>
-                      <Input
-                        id="groupOrganizationName"
-                        required
-                        value={groupForm.organizationName}
-                        onChange={(e) => setGroupForm({...groupForm, organizationName: e.target.value})}
-                      />
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="groupLeaderEmail">Email руководителя *</Label>
-                        <Input
-                          id="groupLeaderEmail"
-                          type="email"
-                          required
-                          value={groupForm.leaderEmail}
-                          onChange={(e) => setGroupForm({...groupForm, leaderEmail: e.target.value})}
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="groupLeaderPhone">Телефон руководителя *</Label>
-                        <Input
-                          id="groupLeaderPhone"
-                          required
-                          value={groupForm.leaderPhone}
-                          onChange={(e) => setGroupForm({...groupForm, leaderPhone: e.target.value})}
-                        />
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="groupParticipantCount">Количество участников *</Label>
-                        <Input
-                          id="groupParticipantCount"
-                          type="number"
-                          required
-                          min="1"
-                          value={groupForm.participantCount}
-                          onChange={(e) => setGroupForm({...groupForm, participantCount: parseInt(e.target.value) || 0})}
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="groupParticipantCategory">Категория участников *</Label>
-                        <select 
-                          id="groupParticipantCategory"
-                          required
-                          value={groupForm.participantCategory}
-                          onChange={(e) => setGroupForm({...groupForm, participantCategory: e.target.value})}
-                          className="w-full p-2 border border-gray-300 rounded-md"
-                        >
-                          <option value="">Выберите категорию</option>
-                          <option value="students">Студенты</option>
-                          <option value="schoolchildren">Школьники</option>
-                          <option value="job_seekers">Соискатели</option>
-                          <option value="employees">Сотрудники организации</option>
-                        </select>
-                      </div>
-                    </div>
-                    <div>
-                      <Label htmlFor="groupAdditionalInfo">Дополнительная информация</Label>
-                      <Textarea
-                        id="groupAdditionalInfo"
-                        rows={3}
-                        value={groupForm.additionalInfo}
-                        onChange={(e) => setGroupForm({...groupForm, additionalInfo: e.target.value})}
-                      />
-                    </div>
-                    <Button type="submit" className="w-full">
-                      <Icon name="Send" size={16} className="mr-2" />
-                      Отправить групповую заявку
-                    </Button>
-                  </form>
-                </CardContent>
-              </Card>
-            </div>
-
-            <Card className="mt-8">
-              <CardContent className="p-6">
-                <Alert>
-                  <Icon name="Info" size={16} />
-                  <AlertDescription>
-                    <strong>Обратите внимание:</strong> После отправки заявки с вами свяжется представитель Краевого кадрового центра 
-                    для подтверждения участия и предоставления дополнительной информации о мероприятии.
-                  </AlertDescription>
-                </Alert>
-              </CardContent>
-            </Card>
-          </TabsContent>
 
           {/* Admin Panel Tab */}
           {isAdmin && (
@@ -1060,6 +804,222 @@ const Index = () => {
             </TabsContent>
           )}
         </Tabs>
+
+        {/* Application Modal */}
+        {showApplicationModal && (
+          <Dialog open={showApplicationModal} onOpenChange={setShowApplicationModal}>
+            <DialogContent className="max-w-2xl">
+              <DialogHeader>
+                <DialogTitle style={{ fontFamily: 'PT Sans, sans-serif' }}>
+                  Заявка на участие в мероприятии
+                </DialogTitle>
+                {selectedEvent && (
+                  <p className="text-sm text-gray-600">
+                    {selectedEvent.title} - {selectedEvent.date}
+                  </p>
+                )}
+              </DialogHeader>
+
+              {!applicationType ? (
+                <div className="space-y-6">
+                  <p className="text-center text-gray-600">Выберите тип заявки:</p>
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <Card 
+                      className="cursor-pointer hover:shadow-lg transition-shadow border-2 hover:border-primary"
+                      onClick={() => handleSelectApplicationType('individual')}
+                    >
+                      <CardContent className="p-6 text-center">
+                        <Icon name="User" size={32} className="mx-auto mb-4 text-primary" />
+                        <h3 className="text-lg font-semibold mb-2">Индивидуальная заявка</h3>
+                        <p className="text-sm text-gray-600">
+                          Для индивидуального участия в мероприятии
+                        </p>
+                      </CardContent>
+                    </Card>
+                    <Card 
+                      className="cursor-pointer hover:shadow-lg transition-shadow border-2 hover:border-primary"
+                      onClick={() => handleSelectApplicationType('group')}
+                    >
+                      <CardContent className="p-6 text-center">
+                        <Icon name="Users" size={32} className="mx-auto mb-4 text-primary" />
+                        <h3 className="text-lg font-semibold mb-2">Групповая заявка</h3>
+                        <p className="text-sm text-gray-600">
+                          Для группового участия от организации
+                        </p>
+                      </CardContent>
+                    </Card>
+                  </div>
+                </div>
+              ) : applicationType === 'individual' ? (
+                <form onSubmit={handleSubmitIndividualApplication} className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="modalIndividualFullName">ФИО *</Label>
+                      <Input
+                        id="modalIndividualFullName"
+                        required
+                        value={individualForm.fullName}
+                        onChange={(e) => setIndividualForm({...individualForm, fullName: e.target.value})}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="modalIndividualEmail">Email *</Label>
+                      <Input
+                        id="modalIndividualEmail"
+                        type="email"
+                        required
+                        value={individualForm.email}
+                        onChange={(e) => setIndividualForm({...individualForm, email: e.target.value})}
+                      />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="modalIndividualPhone">Телефон *</Label>
+                      <Input
+                        id="modalIndividualPhone"
+                        required
+                        value={individualForm.phone}
+                        onChange={(e) => setIndividualForm({...individualForm, phone: e.target.value})}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="modalIndividualOrganization">Организация</Label>
+                      <Input
+                        id="modalIndividualOrganization"
+                        value={individualForm.organization}
+                        onChange={(e) => setIndividualForm({...individualForm, organization: e.target.value})}
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <Label htmlFor="modalIndividualParticipationType">Тип участия *</Label>
+                    <select 
+                      id="modalIndividualParticipationType"
+                      required
+                      value={individualForm.participationType}
+                      onChange={(e) => setIndividualForm({...individualForm, participationType: e.target.value})}
+                      className="w-full p-2 border border-gray-300 rounded-md"
+                    >
+                      <option value="">Выберите тип участия</option>
+                      <option value="visitor">Посетитель</option>
+                      <option value="employer">Работодатель</option>
+                      <option value="partner">Партнер мероприятия</option>
+                      <option value="student">Студент/Школьник</option>
+                    </select>
+                  </div>
+                  <div>
+                    <Label htmlFor="modalIndividualAdditionalInfo">Дополнительная информация</Label>
+                    <Textarea
+                      id="modalIndividualAdditionalInfo"
+                      rows={3}
+                      value={individualForm.additionalInfo}
+                      onChange={(e) => setIndividualForm({...individualForm, additionalInfo: e.target.value})}
+                    />
+                  </div>
+                  <div className="flex gap-2">
+                    <Button type="button" variant="outline" onClick={() => setApplicationType('')} className="flex-1">
+                      Назад
+                    </Button>
+                    <Button type="submit" className="flex-1">
+                      <Icon name="Send" size={16} className="mr-2" />
+                      Отправить заявку
+                    </Button>
+                  </div>
+                </form>
+              ) : (
+                <form onSubmit={handleSubmitGroupApplication} className="space-y-4">
+                  <div>
+                    <Label htmlFor="modalGroupLeaderName">ФИО руководителя группы *</Label>
+                    <Input
+                      id="modalGroupLeaderName"
+                      required
+                      value={groupForm.leaderName}
+                      onChange={(e) => setGroupForm({...groupForm, leaderName: e.target.value})}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="modalGroupOrganizationName">Наименование организации *</Label>
+                    <Input
+                      id="modalGroupOrganizationName"
+                      required
+                      value={groupForm.organizationName}
+                      onChange={(e) => setGroupForm({...groupForm, organizationName: e.target.value})}
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="modalGroupLeaderEmail">Email руководителя *</Label>
+                      <Input
+                        id="modalGroupLeaderEmail"
+                        type="email"
+                        required
+                        value={groupForm.leaderEmail}
+                        onChange={(e) => setGroupForm({...groupForm, leaderEmail: e.target.value})}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="modalGroupLeaderPhone">Телефон руководителя *</Label>
+                      <Input
+                        id="modalGroupLeaderPhone"
+                        required
+                        value={groupForm.leaderPhone}
+                        onChange={(e) => setGroupForm({...groupForm, leaderPhone: e.target.value})}
+                      />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="modalGroupParticipantCount">Количество участников *</Label>
+                      <Input
+                        id="modalGroupParticipantCount"
+                        type="number"
+                        required
+                        min="1"
+                        value={groupForm.participantCount}
+                        onChange={(e) => setGroupForm({...groupForm, participantCount: parseInt(e.target.value) || 0})}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="modalGroupParticipantCategory">Категория участников *</Label>
+                      <select 
+                        id="modalGroupParticipantCategory"
+                        required
+                        value={groupForm.participantCategory}
+                        onChange={(e) => setGroupForm({...groupForm, participantCategory: e.target.value})}
+                        className="w-full p-2 border border-gray-300 rounded-md"
+                      >
+                        <option value="">Выберите категорию</option>
+                        <option value="students">Студенты</option>
+                        <option value="schoolchildren">Школьники</option>
+                        <option value="job_seekers">Соискатели</option>
+                        <option value="employees">Сотрудники организации</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div>
+                    <Label htmlFor="modalGroupAdditionalInfo">Дополнительная информация</Label>
+                    <Textarea
+                      id="modalGroupAdditionalInfo"
+                      rows={3}
+                      value={groupForm.additionalInfo}
+                      onChange={(e) => setGroupForm({...groupForm, additionalInfo: e.target.value})}
+                    />
+                  </div>
+                  <div className="flex gap-2">
+                    <Button type="button" variant="outline" onClick={() => setApplicationType('')} className="flex-1">
+                      Назад
+                    </Button>
+                    <Button type="submit" className="flex-1">
+                      <Icon name="Send" size={16} className="mr-2" />
+                      Отправить групповую заявку
+                    </Button>
+                  </div>
+                </form>
+              )}
+            </DialogContent>
+          </Dialog>
+        )}
 
         {/* Login Modal */}
         {showLogin && (
