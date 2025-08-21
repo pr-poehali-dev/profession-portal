@@ -99,7 +99,6 @@ const Index = () => {
   const [comments, setComments] = useState({});
   const [newComment, setNewComment] = useState('');
   const [showApplicationModal, setShowApplicationModal] = useState(false);
-  const [selectedEvent, setSelectedEvent] = useState(null);
   const [applicationType, setApplicationType] = useState('');
 
 
